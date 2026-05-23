@@ -204,9 +204,13 @@
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
+// Отключаем закрытие свайпом вниз — мешает скроллу
+if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+// Цвет header под тему Telegram
+tg.setHeaderColor('secondary_bg_color');
 
 // ── State ─────────────────────────────────────────────────────────────────
-const BOT_URL = 'https://t.me/QuizProBot'; // поменяй на свой username
+const BOT_URL = tg.initDataUnsafe?.bot?.username ? `https://t.me/${tg.initDataUnsafe.bot.username}` : 'https://t.me/QuizProBot';
 let lang = localStorage.getItem('lang') || tg.initDataUnsafe?.user?.language_code || 'ru';
 if (!['ru','uz','en','ar','tr'].includes(lang)) lang = 'en';
 
@@ -350,11 +354,21 @@ function nav(page) {
   document.getElementById('nav-' + page).classList.add('on');
   if (page === 'stats') renderStats();
   tg.BackButton.hide();
+  updateMainButton(page);
 }
 
 // ── Send commands to bot ───────────────────────────────────────────────────
 function sendToBot(cmd) {
-  tg.sendData(JSON.stringify({ action: cmd, lang }));
+  // sendData работает только при открытии через KeyboardButton (ReplyKeyboard)
+  // При открытии через Menu Button — тоже работает
+  // При любых проблемах — открываем бота напрямую
+  try {
+    tg.sendData(JSON.stringify({ action: cmd, lang }));
+  } catch(e) {
+    // Fallback: открываем бота с командой через deep link
+    const botUsername = tg.initDataUnsafe?.bot?.username || 'QuizProBot';
+    tg.openTelegramLink(`https://t.me/${botUsername}?start=${cmd}`);
+  }
 }
 
 // ── Language grid ──────────────────────────────────────────────────────────
@@ -560,6 +574,19 @@ function renderStats() {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 tg.onEvent('themeChanged', applyLang);
+
+// Настраиваем MainButton (нижняя кнопка Telegram)
+function updateMainButton(page) {
+  if (page === 'home') {
+    tg.MainButton.setText('Создать тест');
+    tg.MainButton.show();
+    tg.MainButton.onClick(() => sendToBot('create'));
+  } else if (page === 'quiz') {
+    tg.MainButton.hide();
+  } else {
+    tg.MainButton.hide();
+  }
+}
 
 // Получаем данные из бота
 window.addEventListener('message', e => {
