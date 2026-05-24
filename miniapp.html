@@ -2,604 +2,780 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>QuizPro</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root {
-    --bg:      var(--tg-theme-bg-color, #ffffff);
-    --bg2:     var(--tg-theme-secondary-bg-color, #f4f4f5);
-    --text:    var(--tg-theme-text-color, #111111);
-    --hint:    var(--tg-theme-hint-color, #888888);
-    --link:    var(--tg-theme-link-color, #2481cc);
-    --btn:     var(--tg-theme-button-color, #2481cc);
-    --btn-txt: var(--tg-theme-button-text-color, #ffffff);
-    --accent:  var(--tg-theme-accent-text-color, #2481cc);
-    --r:       12px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+:root {
+  --bg:      var(--tg-theme-bg-color, #18181b);
+  --bg2:     var(--tg-theme-secondary-bg-color, #27272a);
+  --bg3:     #3f3f46;
+  --text:    var(--tg-theme-text-color, #fafafa);
+  --hint:    var(--tg-theme-hint-color, #a1a1aa);
+  --link:    var(--tg-theme-link-color, #60a5fa);
+  --btn:     var(--tg-theme-button-color, #3b82f6);
+  --btn-txt: var(--tg-theme-button-text-color, #fff);
+  --accent:  var(--tg-theme-accent-text-color, #60a5fa);
+  --green:   #22c55e;
+  --red:     #ef4444;
+  --yellow:  #eab308;
+  --r:       14px;
+  --r-sm:    8px;
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,system-ui,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 
-  /* ── Nav ── */
-  .nav { display: flex; gap: 2px; padding: 8px 12px 0; background: var(--bg2); border-bottom: 1px solid rgba(0,0,0,.06); }
-  .nav-btn { flex: 1; padding: 10px 4px 8px; font-size: 11px; background: none; border: none; color: var(--hint); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; border-bottom: 2px solid transparent; transition: all .15s; }
-  .nav-btn svg { width: 22px; height: 22px; }
-  .nav-btn.on { color: var(--accent); border-bottom-color: var(--accent); }
+/* ── Nav ── */
+.nav{display:flex;background:var(--bg2);border-top:1px solid rgba(255,255,255,.06);padding:6px 4px calc(6px + var(--safe-b));flex-shrink:0;order:2}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;background:none;border:none;color:var(--hint);cursor:pointer;border-radius:var(--r-sm);transition:color .15s;position:relative}
+.nav-btn svg{width:22px;height:22px;stroke-width:1.8}
+.nav-btn span{font-size:10px;font-weight:500}
+.nav-btn.on{color:var(--accent)}
+.nav-btn.on::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--accent);border-radius:2px}
 
-  /* ── Pages ── */
-  .page { display: none; padding: 16px 14px 80px; }
-  .page.on { display: block; }
+/* ── Pages ── */
+.pages{flex:1;overflow:hidden;order:1;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;padding:16px 14px 24px;display:none;-webkit-overflow-scrolling:touch}
+.page.on{display:block}
 
-  /* ── Cards ── */
-  .card { background: var(--bg2); border-radius: var(--r); padding: 14px 16px; margin-bottom: 10px; }
-  .card-row { display: flex; align-items: center; justify-content: space-between; }
-  .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-  .card p  { font-size: 13px; color: var(--hint); line-height: 1.5; }
+/* ── Cards ── */
+.card{background:var(--bg2);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.card-sm{background:var(--bg2);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px}
 
-  /* ── Buttons ── */
-  .btn { width: 100%; padding: 14px; background: var(--btn); color: var(--btn-txt); border: none; border-radius: var(--r); font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity .15s; }
-  .btn:active { opacity: .8; }
-  .btn-sec { background: var(--bg2); color: var(--text); }
-  .btn-sm { padding: 8px 16px; font-size: 13px; font-weight: 500; width: auto; margin-top: 0; border-radius: 20px; }
+/* ── Buttons ── */
+.btn{width:100%;padding:14px;background:var(--btn);color:var(--btn-txt);border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{opacity:.8}
+.btn-outline{background:transparent;border:1.5px solid var(--btn);color:var(--btn)}
+.btn-ghost{background:var(--bg2);color:var(--text)}
+.btn-sm{padding:9px 18px;font-size:13px;font-weight:500;width:auto;border-radius:var(--r-sm)}
+.btn-icon{width:40px;height:40px;padding:0;border-radius:50%;flex-shrink:0}
 
-  /* ── Tags ── */
-  .tag { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
-  .tag-solo  { background: rgba(0,122,255,.12); color: #007aff; }
-  .tag-share { background: rgba(52,199,89,.12);  color: #22a844; }
-  .tag-free  { background: rgba(255,149,0,.12);  color: #e68900; }
+/* ── Typography ── */
+h1{font-size:22px;font-weight:700;margin-bottom:4px}
+h2{font-size:17px;font-weight:600;margin-bottom:12px}
+h3{font-size:15px;font-weight:600}
+.hint{color:var(--hint);font-size:13px;line-height:1.5}
+.mono{font-family:monospace}
 
-  /* ── Stats ── */
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .stat { background: var(--bg2); border-radius: var(--r); padding: 12px; text-align: center; }
-  .stat .num { font-size: 26px; font-weight: 700; color: var(--accent); }
-  .stat .lbl { font-size: 12px; color: var(--hint); margin-top: 2px; }
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+.badge-solo{background:rgba(96,165,250,.15);color:#60a5fa}
+.badge-share{background:rgba(34,197,94,.15);color:#22c55e}
+.badge-pass{background:rgba(34,197,94,.15);color:#22c55e}
+.badge-fail{background:rgba(239,68,68,.15);color:#ef4444}
 
-  /* ── Quiz ── */
-  .quiz-header { font-size: 13px; color: var(--hint); margin-bottom: 6px; }
-  .quiz-q { font-size: 16px; font-weight: 600; line-height: 1.5; margin-bottom: 16px; }
-  .progress { height: 4px; background: var(--bg2); border-radius: 2px; margin-bottom: 14px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--btn); border-radius: 2px; transition: width .3s; }
-  .opt { width: 100%; text-align: left; padding: 13px 14px; background: var(--bg2); border: 1.5px solid transparent; border-radius: var(--r); font-size: 14px; cursor: pointer; margin-bottom: 8px; transition: all .15s; display: flex; align-items: center; gap: 10px; }
-  .opt:active { opacity: .7; }
-  .opt.correct { background: rgba(52,199,89,.12); border-color: #22a844; color: #22a844; }
-  .opt.wrong   { background: rgba(255,59,48,.12);  border-color: #ff3b30; color: #ff3b30; }
-  .opt .letter { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--hint); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-  .opt.correct .letter { background: #22a844; border-color: #22a844; color: #fff; }
-  .opt.wrong   .letter { background: #ff3b30; border-color: #ff3b30; color: #fff; }
-  .explain-box { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 13px; color: var(--hint); line-height: 1.6; margin: 10px 0; }
-  .result-wrap { text-align: center; padding: 24px 0; }
-  .score-ring { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--btn); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 16px; }
-  .score-big  { font-size: 28px; font-weight: 700; color: var(--btn); }
-  .score-pct  { font-size: 13px; color: var(--hint); }
+/* ── Stats grid ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{background:var(--bg2);border-radius:var(--r);padding:14px;text-align:center}
+.stat-num{font-size:28px;font-weight:700;color:var(--accent);line-height:1}
+.stat-lbl{font-size:11px;color:var(--hint);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
 
-  /* ── Lang picker ── */
-  .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .lang-btn { padding: 12px; background: var(--bg2); border: 1.5px solid transparent; border-radius: var(--r); font-size: 14px; cursor: pointer; text-align: center; transition: all .15s; }
-  .lang-btn.on { border-color: var(--btn); color: var(--accent); font-weight: 600; }
+/* ── Progress bar ── */
+.progress{height:4px;background:var(--bg2);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:var(--btn);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 
-  /* ── Pricing ── */
-  .price-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-size: 14px; }
-  .price-row:last-child { border: none; }
-  .price-val { font-weight: 600; color: var(--accent); }
+/* ── Quiz ── */
+.quiz-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.quiz-num{font-size:12px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.06em}
+.quiz-score{font-size:13px;font-weight:600;color:var(--accent)}
+.quiz-q{font-size:16px;font-weight:600;line-height:1.55;margin-bottom:20px}
+.opt{width:100%;text-align:left;padding:13px 14px;background:var(--bg2);border:1.5px solid transparent;border-radius:var(--r);font-size:14px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .15s,background .15s;color:var(--text)}
+.opt:active{opacity:.8}
+.opt-letter{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--hint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;transition:all .15s}
+.opt.correct{border-color:var(--green);background:rgba(34,197,94,.1)}
+.opt.correct .opt-letter{background:var(--green);border-color:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red);background:rgba(239,68,68,.1)}
+.opt.wrong .opt-letter{background:var(--red);border-color:var(--red);color:#fff}
+.opt:not(:disabled):hover{border-color:var(--btn)}
+.explain{margin:10px 0;padding:12px 14px;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:13px;color:var(--hint);line-height:1.6}
 
-  h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
-  .section-title { font-size: 12px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: .06em; margin: 18px 0 8px; }
-  .empty { text-align: center; color: var(--hint); padding: 40px 20px; font-size: 14px; }
+/* ── Result ── */
+.result-circle{width:110px;height:110px;border-radius:50%;border:4px solid var(--btn);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px}
+.result-big{font-size:30px;font-weight:700;color:var(--btn);line-height:1}
+.result-pct{font-size:13px;color:var(--hint)}
+
+/* ── Pricing table ── */
+.price-table{width:100%;border-collapse:collapse}
+.price-table th{text-align:left;font-size:11px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.price-table td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px}
+.price-table tr:last-child td{border:none}
+.price-val{font-weight:600;color:var(--accent)}
+.price-sep td{border-bottom:1px solid rgba(255,255,255,.1)!important;padding:2px 0!important;background:transparent}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:48px 24px;color:var(--hint)}
+.empty svg{width:48px;height:48px;margin:0 auto 12px;opacity:.4}
+.empty p{font-size:15px;margin-bottom:16px}
+
+/* ── Lang grid ── */
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lang-btn{padding:12px;background:var(--bg2);border:1.5px solid transparent;border-radius:var(--r);font-size:14px;cursor:pointer;text-align:center;color:var(--text);transition:all .15s}
+.lang-btn.on{border-color:var(--btn);color:var(--accent);font-weight:600}
+
+/* ── Input ── */
+.input{width:100%;padding:13px 14px;background:var(--bg2);border:1.5px solid transparent;border-radius:var(--r);font-size:15px;color:var(--text);outline:none;transition:border-color .15s}
+.input:focus{border-color:var(--btn)}
+.input::placeholder{color:var(--hint)}
+
+/* ── Test card ── */
+.test-card{background:var(--bg2);border-radius:var(--r);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
+.test-card:active{background:var(--bg3)}
+.test-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.test-icon.solo{background:rgba(96,165,250,.15)}
+.test-icon.share{background:rgba(34,197,94,.15)}
+.test-meta{flex:1;min-width:0}
+.test-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.test-info{font-size:12px;color:var(--hint);margin-top:3px}
+.test-arrow{color:var(--hint)}
+
+/* ── Attempt row ── */
+.attempt-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.attempt-row:last-child{border:none}
+.attempt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.attempt-dot.pass{background:var(--green)}
+.attempt-dot.fail{background:var(--red)}
+
+/* ── Loading ── */
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;gap:12px;color:var(--hint);font-size:14px}
+.spin{width:32px;height:32px;border:3px solid var(--bg2);border-top-color:var(--btn);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:calc(80px + var(--safe-b));left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:10px 20px;border-radius:30px;font-size:14px;font-weight:500;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ── Open answer ── */
+.open-wrap{margin-bottom:12px}
+.open-check{margin-top:10px}
 </style>
 </head>
 <body>
 
-<!-- Nav -->
-<div class="nav">
+<div class="pages">
+
+<!-- HOME -->
+<div class="page on" id="p-home">
+  <div style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <h1 id="h-welcome">QuizPro</h1>
+      <div style="font-size:22px">📄</div>
+    </div>
+    <p class="hint" id="h-tagline">Загрузи документ — получи тест</p>
+  </div>
+
+  <button class="btn" onclick="sendToBot('create')" id="h-btn-create" style="margin-bottom:10px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
+    <span id="h-create-lbl">Создать тест</span>
+  </button>
+  <button class="btn btn-ghost" onclick="nav('tests')" id="h-btn-tests" style="margin-bottom:20px">
+    <span id="h-tests-lbl">Мои тесты</span>
+  </button>
+
+  <div id="h-recent">
+    <h2 id="h-recent-title">Последние тесты</h2>
+    <div id="h-recent-list"><p class="hint" id="h-no-recent">Тестов пока нет</p></div>
+  </div>
+</div>
+
+<!-- TESTS -->
+<div class="page" id="p-tests">
+  <h2 id="t-title">Мои тесты</h2>
+  <div id="t-list"></div>
+  <button class="btn" onclick="sendToBot('create')" style="margin-top:8px">
+    <span id="t-create-lbl">+ Создать тест</span>
+  </button>
+</div>
+
+<!-- QUIZ -->
+<div class="page" id="p-quiz">
+  <div class="quiz-meta">
+    <span class="quiz-num" id="q-num">1 / 10</span>
+    <span class="quiz-score" id="q-score">0 ✓</span>
+  </div>
+  <div class="progress"><div class="progress-fill" id="q-bar" style="width:0%"></div></div>
+  <div class="quiz-q" id="q-text"></div>
+  <div id="q-opts"></div>
+  <div class="explain" id="q-explain" style="display:none"></div>
+  <div class="open-wrap" id="q-open-wrap" style="display:none">
+    <input class="input" id="q-open-input" placeholder="Введи ответ…" onkeydown="if(event.key==='Enter')checkOpen()">
+    <button class="btn open-check" id="q-open-btn" onclick="checkOpen()">Проверить</button>
+  </div>
+  <button class="btn" id="q-next" style="display:none;margin-top:12px" onclick="quizNext()"></button>
+  <div id="q-result" style="display:none"></div>
+</div>
+
+<!-- STATS -->
+<div class="page" id="p-stats">
+  <h2 id="s-title">Статистика</h2>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="s-tests">—</div><div class="stat-lbl" id="s-tests-lbl">Тестов</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-atts">—</div><div class="stat-lbl" id="s-atts-lbl">Попыток</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-pass">—</div><div class="stat-lbl" id="s-pass-lbl">Сдано</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-avg">—</div><div class="stat-lbl" id="s-avg-lbl">Средний %</div></div>
+  </div>
+  <h2 id="s-hist-title">История</h2>
+  <div id="s-hist"></div>
+</div>
+
+<!-- PRICING -->
+<div class="page" id="p-pricing">
+  <h2 id="pr-title">Тарифы</h2>
+  <div class="card" style="margin-bottom:10px">
+    <p class="hint" style="margin-bottom:12px" id="pr-desc">Оплата разовая при создании теста.</p>
+    <p style="font-size:13px;margin-bottom:6px">🔒 <span id="pr-solo">Solo — только для себя</span></p>
+    <p style="font-size:13px;margin-bottom:14px">🔗 <span id="pr-share">Share — можно делиться (+60%)</span></p>
+    <table class="price-table" id="pr-table"></table>
+  </div>
+  <p class="hint" style="text-align:center;font-size:12px" id="pr-note">1 ⭐ ≈ $0.013 USD</p>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="p-settings">
+  <h2 id="set-title">Настройки</h2>
+  <div class="card" style="margin-bottom:14px">
+    <p style="font-size:13px;font-weight:600;margin-bottom:10px" id="set-lang-title">Язык интерфейса</p>
+    <div class="lang-grid" id="set-lang-grid"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:8px">QuizPro</h3>
+    <p class="hint" style="font-size:13px;line-height:1.6" id="set-about">Загружай документы — получай тесты. PDF, DOCX, TXT до 1000 вопросов.</p>
+  </div>
+</div>
+
+</div>
+
+<!-- NAV -->
+<nav class="nav">
   <button class="nav-btn on" onclick="nav('home')" id="nav-home">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-    <span id="lbl-home">Главная</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    <span id="nl-home">Главная</span>
   </button>
   <button class="nav-btn" onclick="nav('tests')" id="nav-tests">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    <span id="lbl-tests">Тесты</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    <span id="nl-tests">Тесты</span>
   </button>
   <button class="nav-btn" onclick="nav('stats')" id="nav-stats">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <span id="lbl-stats">Статистика</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span id="nl-stats">Статистика</span>
   </button>
   <button class="nav-btn" onclick="nav('pricing')" id="nav-pricing">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-    <span id="lbl-pricing">Тарифы</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    <span id="nl-pricing">Тарифы</span>
   </button>
   <button class="nav-btn" onclick="nav('settings')" id="nav-settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    <span id="lbl-settings">Настройки</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span id="nl-settings">Настройки</span>
   </button>
-</div>
+</nav>
 
-<!-- Home -->
-<div class="page on" id="page-home">
-  <h2 id="txt-welcome">QuizPro</h2>
-  <div class="card">
-    <div class="card-row">
-      <div>
-        <h3 id="txt-create-title">Создать тест</h3>
-        <p id="txt-create-desc">PDF, Word, текст или тема</p>
-      </div>
-      <button class="btn btn-sm" onclick="sendToBot('create')" id="btn-create-action">Создать</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-row">
-      <div>
-        <h3 id="txt-take-title">Пройти тест</h3>
-        <p id="txt-take-desc">Введи код или открой по ссылке</p>
-      </div>
-      <button class="btn btn-sm btn-sec" onclick="nav('tests')" id="btn-take-action">Открыть</button>
-    </div>
-  </div>
-  <div class="section-title" id="txt-recent">Последние тесты</div>
-  <div id="recent-tests"><p class="empty" id="txt-no-recent">Тестов пока нет</p></div>
-</div>
-
-<!-- Tests -->
-<div class="page" id="page-tests">
-  <h2 id="txt-my-tests-h">Мои тесты</h2>
-  <div id="tests-list"></div>
-  <button class="btn" onclick="sendToBot('create')" id="btn-new-test">+ Создать новый тест</button>
-</div>
-
-<!-- Quiz view -->
-<div class="page" id="page-quiz">
-  <div class="quiz-header" id="quiz-header"></div>
-  <div class="progress"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-  <div class="quiz-q" id="quiz-q"></div>
-  <div id="quiz-opts"></div>
-  <div class="explain-box" id="quiz-explain" style="display:none"></div>
-  <div id="quiz-result" style="display:none"></div>
-  <button class="btn" id="quiz-next-btn" style="display:none" onclick="quizNext()"></button>
-</div>
-
-<!-- Stats -->
-<div class="page" id="page-stats">
-  <h2 id="txt-stats-h">Статистика</h2>
-  <div class="stat-grid">
-    <div class="stat"><div class="num" id="s-tests">0</div><div class="lbl" id="s-tests-lbl">Тестов</div></div>
-    <div class="stat"><div class="num" id="s-attempts">0</div><div class="lbl" id="s-attempts-lbl">Попыток</div></div>
-    <div class="stat"><div class="num" id="s-passed">0</div><div class="lbl" id="s-passed-lbl">Сдано</div></div>
-    <div class="stat"><div class="num" id="s-avg">0%</div><div class="lbl" id="s-avg-lbl">Средний %</div></div>
-  </div>
-  <div class="section-title" id="txt-history">История попыток</div>
-  <div id="attempts-list"></div>
-</div>
-
-<!-- Pricing -->
-<div class="page" id="page-pricing">
-  <h2 id="txt-pricing-h">Тарифы</h2>
-  <div class="card">
-    <p style="font-size:13px;line-height:1.6;margin-bottom:12px" id="txt-pricing-note">
-      Оплата разовая при создании теста. Чем больше вопросов — тем дешевле за штуку.
-    </p>
-    <div id="price-table"></div>
-  </div>
-  <div class="card" style="margin-top:8px">
-    <p style="font-size:12px;color:var(--hint)" id="txt-rate">1 ⭐ ≈ $0.013 USD · Цены обновляются автоматически</p>
-  </div>
-</div>
-
-<!-- Settings -->
-<div class="page" id="page-settings">
-  <h2 id="txt-settings-h">Настройки</h2>
-  <div class="section-title" id="txt-lang-title">Язык / Language / Til</div>
-  <div class="lang-grid" id="lang-grid"></div>
-  <div style="margin-top:16px">
-    <div class="section-title" id="txt-about-title">О боте</div>
-    <div class="card">
-      <p style="font-size:13px;line-height:1.6" id="txt-about-text">
-        QuizPro превращает любой документ в тест.<br>
-        Поддержка: PDF, DOCX, TXT, MD<br>
-        До 500 вопросов в одном тесте.
-      </p>
-    </div>
-  </div>
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
-// Отключаем закрытие свайпом вниз — мешает скроллу
 if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
-// Цвет header под тему Telegram
-tg.setHeaderColor('secondary_bg_color');
+tg.setHeaderColor && tg.setHeaderColor('secondary_bg_color');
 
-// ── State ─────────────────────────────────────────────────────────────────
-const BOT_URL = tg.initDataUnsafe?.bot?.username ? `https://t.me/${tg.initDataUnsafe.bot.username}` : 'https://t.me/QuizProBot';
-let lang = localStorage.getItem('lang') || tg.initDataUnsafe?.user?.language_code || 'ru';
-if (!['ru','uz','en','ar','tr'].includes(lang)) lang = 'en';
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  lang: localStorage.getItem('lang') ||
+        (tg.initDataUnsafe?.user?.language_code || 'ru').split('-')[0],
+  data: { tests: [], attempts: [], stats: {} },
+  quiz: null,
+};
+const API = (new URLSearchParams(location.search).get('api')) || window.QUIZ_API_BASE || '';
+const UID = tg.initDataUnsafe?.user?.id || 0;
 
-let quizState = null;
-let appData = { tests: [], attempts: [], prices: [] };
-
-// ── i18n ──────────────────────────────────────────────────────────────────
-const I18N = {
+// ── i18n ───────────────────────────────────────────────────────────────────
+const I = {
   ru: {
-    home:'Главная', tests:'Тесты', stats:'Статистика', pricing:'Тарифы', settings:'Настройки',
-    welcome:'QuizPro', 'create-title':'Создать тест', 'create-desc':'PDF, Word, текст или тема',
-    'take-title':'Пройти тест', 'take-desc':'Введи код или открой по ссылке',
-    recent:'Последние тесты', 'no-recent':'Тестов пока нет',
-    'my-tests-h':'Мои тесты', 'new-test':'+ Создать новый тест',
-    'stats-h':'Статистика', 'tests-lbl':'Тестов', 'attempts-lbl':'Попыток',
-    'passed-lbl':'Сдано', 'avg-lbl':'Средний %', history:'История попыток',
-    'pricing-h':'Тарифы',
-    'pricing-note':'Оплата разовая при создании теста. Чем больше вопросов — тем дешевле.',
-    rate:'1 ⭐ ≈ $0.013 USD · Цены обновляются автоматически',
-    'settings-h':'Настройки', 'lang-title':'Язык', 'about-title':'О боте',
-    'about-text':'QuizPro превращает любой документ в тест.\nПоддержка: PDF, DOCX, TXT\nДо 500 вопросов.',
-    'create-btn':'Создать', 'take-btn':'Открыть', questions:'вопросов',
-    solo:'Solo', share:'Share', correct:'✅ Правильно!',
-    wrong:'❌ Неверно. Правильно:', next:'Следующий →', finish:'Завершить',
-    passed:'✅ Сдан', failed:'❌ Не сдан', retry:'🔁 Пройти снова', 'back-home':'🏠 Главная',
-    'q-of':'из', mistakes:'Ошибки:', 'no-tests':'Нет тестов. Создайте первый!'
+    home:'Главная',tests:'Тесты',stats:'Статистика',pricing:'Тарифы',settings:'Настройки',
+    welcome:'QuizPro',tagline:'Загрузи документ — получи тест',
+    create:'Создать тест',mytests:'Мои тесты',recent:'Последние тесты',noneyet:'Тестов пока нет',
+    tcreate:'+ Создать тест',
+    stitle:'Статистика',tests_lbl:'Тестов',atts_lbl:'Попыток',pass_lbl:'Сдано',avg_lbl:'Средний %',hist:'История',
+    prtitle:'Тарифы',prdesc:'Оплата разовая при создании теста. Чем больше вопросов — тем дешевле.',
+    prqs:'Вопросов',prsolo:'Solo — только для себя',prshare:'Share — можно делиться (+60%)',prnote:'1 ⭐ ≈ $0.013 USD',
+    settings:'Настройки',lang_lbl:'Язык интерфейса',about:'Загружай документы — получай тесты. PDF, DOCX, TXT до 1000 вопросов.',
+    correct:'✅  Верно!',wrong:'❌  Неверно',correct_ans:'Правильный ответ:',
+    next:'Следующий →',finish:'Завершить',
+    result:'Результат',passed:'✅  Сдан',failed:'❌  Не сдан',score:'{s} из {t} · {p}%',
+    mistakes:'Ошибки:',retry:'Повторить',home_btn:'На главную',
+    check:'Проверить',enter_ans:'Введи ответ…',
+    solo:'Solo',share:'Share',q_lbl:'вопросов',attempts:'попыток',
+    no_tests:'У вас нет тестов.\nСоздайте первый!',
+    loading:'Загружаю…',
   },
   uz: {
-    home:"Bosh sahifa", tests:"Testlar", stats:"Statistika", pricing:"Tariflar", settings:"Sozlamalar",
-    welcome:"QuizPro", 'create-title':"Test yaratish", 'create-desc':"PDF, Word, matn yoki mavzu",
-    'take-title':"Testni o'tish", 'take-desc':"Kodni kiriting yoki havoladan oching",
-    recent:"Oxirgi testlar", 'no-recent':"Testlar yo'q hali",
-    'my-tests-h':"Mening testlarim", 'new-test':"+ Yangi test yaratish",
-    'stats-h':"Statistika", 'tests-lbl':"Testlar", 'attempts-lbl':"Urinishlar",
-    'passed-lbl':"O'tdi", 'avg-lbl':"O'rtacha %", history:"Urinishlar tarixi",
-    'pricing-h':"Tariflar",
-    'pricing-note':"Test yaratishda bir martalik to'lov. Ko'proq savol — arzonroq.",
-    rate:"1 ⭐ ≈ $0.013 USD · Narxlar avtomatik yangilanadi",
-    'settings-h':"Sozlamalar", 'lang-title':"Til", 'about-title':"Bot haqida",
-    'about-text':"QuizPro har qanday hujjatni testga aylantiradi.\nPDF, DOCX, TXT\n500 ta savolga qadar.",
-    'create-btn':"Yaratish", 'take-btn':"Ochish", questions:"ta savol",
-    solo:"Solo", share:"Share", correct:"✅ To'g'ri!",
-    wrong:"❌ Noto'g'ri. To'g'ri javob:", next:"Keyingisi →", finish:"Tugatish",
-    passed:"✅ O'tdi", failed:"❌ O'tmadi", retry:"🔁 Qayta o'tish", 'back-home':"🏠 Bosh sahifa",
-    'q-of':"dan", mistakes:"Xatolar:", 'no-tests':"Testlar yo'q. Birinchisini yarating!"
+    home:"Bosh sahifa",tests:"Testlar",stats:"Statistika",pricing:"Tariflar",settings:"Sozlamalar",
+    welcome:"QuizPro",tagline:"Hujjat yuklang — test oling",
+    create:"Test yaratish",mytests:"Testlarim",recent:"Oxirgi testlar",noneyet:"Testlar yo'q hali",
+    tcreate:"+ Test yaratish",
+    stitle:"Statistika",tests_lbl:"Testlar",atts_lbl:"Urinishlar",pass_lbl:"O'tdi",avg_lbl:"O'rtacha %",hist:"Tarix",
+    prtitle:"Tariflar",prdesc:"Test yaratishda bir martalik to'lov.",
+    prqs:"Savollar",prsolo:"Solo — faqat o'zingiz",prshare:"Share — ulashish mumkin (+60%)",prnote:"1 ⭐ ≈ $0.013 USD",
+    settings:"Sozlamalar",lang_lbl:"Til",about:"PDF, DOCX, TXT — 1000 tagacha savol.",
+    correct:"✅  To'g'ri!",wrong:"❌  Noto'g'ri",correct_ans:"To'g'ri javob:",
+    next:"Keyingisi →",finish:"Tugatish",
+    result:"Natija",passed:"✅  O'tdi",failed:"❌  O'tmadi",score:"{s} / {t} · {p}%",
+    mistakes:"Xatolar:",retry:"Qaytadan",home_btn:"Bosh sahifa",
+    check:"Tekshirish",enter_ans:"Javob kiriting…",
+    solo:"Solo",share:"Share",q_lbl:"savol",attempts:"urinish",
+    no_tests:"Testlar yo'q.\nBirinchisini yarating!",
+    loading:"Yuklanmoqda…",
   },
   en: {
-    home:"Home", tests:"Quizzes", stats:"Stats", pricing:"Pricing", settings:"Settings",
-    welcome:"QuizPro", 'create-title':"Create a quiz", 'create-desc':"PDF, Word, text or topic",
-    'take-title':"Take a quiz", 'take-desc':"Enter code or open from link",
-    recent:"Recent quizzes", 'no-recent':"No quizzes yet",
-    'my-tests-h':"My quizzes", 'new-test':"+ Create new quiz",
-    'stats-h':"Statistics", 'tests-lbl':"Quizzes", 'attempts-lbl':"Attempts",
-    'passed-lbl':"Passed", 'avg-lbl':"Avg score", history:"Attempt history",
-    'pricing-h':"Pricing",
-    'pricing-note':"One-time payment when creating. More questions = cheaper per question.",
-    rate:"1 ⭐ ≈ $0.013 USD · Prices update automatically",
-    'settings-h':"Settings", 'lang-title':"Language", 'about-title':"About",
-    'about-text':"QuizPro turns any document into a quiz.\nPDF, DOCX, TXT\nUp to 500 questions.",
-    'create-btn':"Create", 'take-btn':"Open", questions:"questions",
-    solo:"Solo", share:"Share", correct:"✅ Correct!",
-    wrong:"❌ Wrong. Correct:", next:"Next →", finish:"Finish",
-    passed:"✅ Passed", failed:"❌ Failed", retry:"🔁 Try again", 'back-home':"🏠 Home",
-    'q-of':"of", mistakes:"Mistakes:", 'no-tests':"No quizzes. Create your first!"
+    home:"Home",tests:"Quizzes",stats:"Stats",pricing:"Pricing",settings:"Settings",
+    welcome:"QuizPro",tagline:"Upload a document — get a quiz",
+    create:"Create quiz",mytests:"My quizzes",recent:"Recent quizzes",noneyet:"No quizzes yet",
+    tcreate:"+ Create quiz",
+    stitle:"Statistics",tests_lbl:"Quizzes",atts_lbl:"Attempts",pass_lbl:"Passed",avg_lbl:"Avg score",hist:"History",
+    prtitle:"Pricing",prdesc:"One-time payment when creating. More questions = cheaper per question.",
+    prqs:"Questions",prsolo:"Solo — private",prshare:"Share — shareable (+60%)",prnote:"1 ⭐ ≈ $0.013 USD",
+    settings:"Settings",lang_lbl:"Language",about:"Upload documents — get quizzes. PDF, DOCX, TXT up to 1000 questions.",
+    correct:"✅  Correct!",wrong:"❌  Wrong",correct_ans:"Correct answer:",
+    next:"Next →",finish:"Finish",
+    result:"Result",passed:"✅  Passed",failed:"❌  Failed",score:"{s} of {t} · {p}%",
+    mistakes:"Mistakes:",retry:"Try again",home_btn:"Home",
+    check:"Check",enter_ans:"Enter answer…",
+    solo:"Solo",share:"Share",q_lbl:"questions",attempts:"attempts",
+    no_tests:"No quizzes yet.\nCreate your first one!",
+    loading:"Loading…",
   },
   ar: {
-    home:"الرئيسية", tests:"الاختبارات", stats:"الإحصائيات", pricing:"الأسعار", settings:"الإعدادات",
-    welcome:"QuizPro", 'create-title':"إنشاء اختبار", 'create-desc':"PDF أو Word أو نص أو موضوع",
-    'take-title':"أجرِ اختباراً", 'take-desc':"أدخل الكود أو افتح من رابط",
-    recent:"الاختبارات الأخيرة", 'no-recent':"لا توجد اختبارات بعد",
-    'my-tests-h':"اختباراتي", 'new-test':"+ إنشاء اختبار جديد",
-    'stats-h':"الإحصائيات", 'tests-lbl':"الاختبارات", 'attempts-lbl':"المحاولات",
-    'passed-lbl':"نجح", 'avg-lbl':"متوسط", history:"سجل المحاولات",
-    'pricing-h':"الأسعار",
-    'pricing-note':"دفعة واحدة عند الإنشاء. كلما زادت الأسئلة كلما انخفض السعر.",
-    rate:"1 ⭐ ≈ $0.013 USD",
-    'settings-h':"الإعدادات", 'lang-title':"اللغة", 'about-title':"عن البوت",
-    'about-text':"QuizPro يحوّل أي مستند إلى اختبار.\nPDF, DOCX, TXT\nحتى 500 سؤال.",
-    'create-btn':"إنشاء", 'take-btn':"فتح", questions:"أسئلة",
-    solo:"Solo", share:"Share", correct:"✅ صحيح!",
-    wrong:"❌ خطأ. الصواب:", next:"التالي →", finish:"إنهاء",
-    passed:"✅ نجح", failed:"❌ راسب", retry:"🔁 إعادة", 'back-home':"🏠 الرئيسية",
-    'q-of':"من", mistakes:"الأخطاء:", 'no-tests':"لا توجد اختبارات. أنشئ أولاً!"
+    home:"الرئيسية",tests:"الاختبارات",stats:"الإحصائيات",pricing:"الأسعار",settings:"الإعدادات",
+    welcome:"QuizPro",tagline:"ارفع مستنداً — احصل على اختبار",
+    create:"إنشاء اختبار",mytests:"اختباراتي",recent:"الأخيرة",noneyet:"لا توجد اختبارات",
+    tcreate:"+ إنشاء اختبار",
+    stitle:"الإحصائيات",tests_lbl:"الاختبارات",atts_lbl:"المحاولات",pass_lbl:"نجح",avg_lbl:"متوسط",hist:"السجل",
+    prtitle:"الأسعار",prdesc:"دفعة واحدة عند الإنشاء.",
+    prqs:"الأسئلة",prsolo:"Solo — خاص",prshare:"Share — مشاركة (+60%)",prnote:"1 ⭐ ≈ $0.013",
+    settings:"الإعدادات",lang_lbl:"اللغة",about:"PDF, DOCX, TXT — حتى 1000 سؤال.",
+    correct:"✅  صحيح!",wrong:"❌  خطأ",correct_ans:"الإجابة الصحيحة:",
+    next:"التالي →",finish:"إنهاء",
+    result:"النتيجة",passed:"✅  نجح",failed:"❌  راسب",score:"{s}/{t} · {p}%",
+    mistakes:"الأخطاء:",retry:"إعادة",home_btn:"الرئيسية",
+    check:"تحقق",enter_ans:"أدخل إجابتك…",
+    solo:"Solo",share:"Share",q_lbl:"سؤالاً",attempts:"محاولة",
+    no_tests:"لا توجد اختبارات.",
+    loading:"جارٍ التحميل…",
   },
   tr: {
-    home:"Anasayfa", tests:"Testler", stats:"İstatistik", pricing:"Fiyatlar", settings:"Ayarlar",
-    welcome:"QuizPro", 'create-title':"Test oluştur", 'create-desc':"PDF, Word, metin veya konu",
-    'take-title':"Test çöz", 'take-desc':"Kodu gir veya bağlantıdan aç",
-    recent:"Son testler", 'no-recent':"Henüz test yok",
-    'my-tests-h':"Testlerim", 'new-test':"+ Yeni test oluştur",
-    'stats-h':"İstatistikler", 'tests-lbl':"Testler", 'attempts-lbl':"Denemeler",
-    'passed-lbl':"Geçti", 'avg-lbl':"Ort. puan", history:"Deneme geçmişi",
-    'pricing-h':"Fiyatlar",
-    'pricing-note':"Oluşturmada tek seferlik ödeme. Daha fazla soru = daha ucuz.",
-    rate:"1 ⭐ ≈ $0.013 USD · Fiyatlar otomatik güncellenir",
-    'settings-h':"Ayarlar", 'lang-title':"Dil", 'about-title':"Bot hakkında",
-    'about-text':"QuizPro her belgeyi teste dönüştürür.\nPDF, DOCX, TXT\n500 soruya kadar.",
-    'create-btn':"Oluştur", 'take-btn':"Aç", questions:"soru",
-    solo:"Solo", share:"Share", correct:"✅ Doğru!",
-    wrong:"❌ Yanlış. Doğrusu:", next:"Sonraki →", finish:"Bitir",
-    passed:"✅ Geçti", failed:"❌ Geçemedi", retry:"🔁 Tekrar", 'back-home':"🏠 Anasayfa",
-    'q-of':"/ toplam", mistakes:"Hatalar:", 'no-tests':"Test yok. İlkini oluşturun!"
-  }
+    home:"Anasayfa",tests:"Testler",stats:"İstatistik",pricing:"Fiyatlar",settings:"Ayarlar",
+    welcome:"QuizPro",tagline:"Belge yükle — test al",
+    create:"Test oluştur",mytests:"Testlerim",recent:"Son testler",noneyet:"Henüz test yok",
+    tcreate:"+ Test oluştur",
+    stitle:"İstatistikler",tests_lbl:"Testler",atts_lbl:"Denemeler",pass_lbl:"Geçti",avg_lbl:"Ort. puan",hist:"Geçmiş",
+    prtitle:"Fiyatlar",prdesc:"Oluştururken tek seferlik ödeme.",
+    prqs:"Sorular",prsolo:"Solo — özel",prshare:"Share — paylaşılabilir (+%60)",prnote:"1 ⭐ ≈ $0.013",
+    settings:"Ayarlar",lang_lbl:"Dil",about:"PDF, DOCX, TXT — 1000 soruya kadar.",
+    correct:"✅  Doğru!",wrong:"❌  Yanlış",correct_ans:"Doğru cevap:",
+    next:"Sonraki →",finish:"Bitir",
+    result:"Sonuç",passed:"✅  Geçti",failed:"❌  Geçemedi",score:"{s}/{t} · %{p}",
+    mistakes:"Hatalar:",retry:"Tekrar",home_btn:"Ana sayfa",
+    check:"Kontrol et",enter_ans:"Cevabını gir…",
+    solo:"Solo",share:"Share",q_lbl:"soru",attempts:"deneme",
+    no_tests:"Test yok.\nİlkini oluşturun!",
+    loading:"Yükleniyor…",
+  },
 };
+const LANGS = {ru:'🇷🇺 Русский',uz:"🇺🇿 O'zbek",en:'🇬🇧 English',ar:'🇸🇦 العربية',tr:'🇹🇷 Türkçe'};
 
-function s(key) { return (I18N[lang] || I18N.en)[key] || key; }
+function s(k, p={}) {
+  let str = (I[state.lang]||I.en)[k] || k;
+  return str.replace(/\{(\w+)\}/g, (_,x)=>p[x]??_);
+}
 
-// ── Apply i18n ─────────────────────────────────────────────────────────────
-function applyLang() {
-  const map = {
-    'lbl-home':'home','lbl-tests':'tests','lbl-stats':'stats',
-    'lbl-pricing':'pricing','lbl-settings':'settings',
-    'txt-welcome':'welcome','txt-create-title':'create-title','txt-create-desc':'create-desc',
-    'txt-take-title':'take-title','txt-take-desc':'take-desc',
-    'txt-recent':'recent','txt-no-recent':'no-recent',
-    'txt-my-tests-h':'my-tests-h','btn-new-test':'new-test',
-    'txt-stats-h':'stats-h','s-tests-lbl':'tests-lbl','s-attempts-lbl':'attempts-lbl',
-    's-passed-lbl':'passed-lbl','s-avg-lbl':'avg-lbl','txt-history':'history',
-    'txt-pricing-h':'pricing-h','txt-pricing-note':'pricing-note','txt-rate':'rate',
-    'txt-settings-h':'settings-h','txt-lang-title':'lang-title',
-    'txt-about-title':'about-title','txt-about-text':'about-text',
-    'btn-create-action':'create-btn','btn-take-action':'take-btn',
-  };
-  for (const [id, key] of Object.entries(map)) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = s(key);
+// ── API ────────────────────────────────────────────────────────────────────
+async function apiGet(path) {
+  if (!API) return null;
+  try { const r=await fetch(API+path,{cache:'no-cache'}); return r.ok?r.json():null; }
+  catch { return null; }
+}
+async function apiPost(path, body) {
+  if (!API) return null;
+  try { const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); return r.ok?r.json():null; }
+  catch { return null; }
+}
+
+async function loadData() {
+  const [userData, pricesData] = await Promise.all([
+    UID ? apiGet(`/api/user?uid=${UID}`) : null,
+    apiGet('/api/prices'),
+  ]);
+  if (userData) {
+    state.data.tests    = userData.tests    || [];
+    state.data.attempts = userData.attempts || [];
+    const a = state.data.attempts;
+    state.data.stats = {
+      tests:   state.data.tests.length,
+      atts:    a.length,
+      passed:  a.filter(x=>x.passed).length,
+      avg:     a.length ? Math.round(a.reduce((s,x)=>s+(x.score/x.total*100||0),0)/a.length) : 0,
+    };
   }
-  document.documentElement.lang = lang;
-  document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
-  renderLangGrid();
-  renderPriceTable();
-  renderTests();
-  renderStats();
+  if (pricesData) {
+    state.data.prices = pricesData.prices || [];
+    if (pricesData.xtr_usd) {
+      document.getElementById('pr-note').textContent = `1 ⭐ ≈ $${pricesData.xtr_usd} USD · max ${pricesData.max_questions||1000} вопросов`;
+    }
+  }
+  renderAll();
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────────
 function nav(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
-  document.getElementById('page-' + page).classList.add('on');
-  document.getElementById('nav-' + page).classList.add('on');
-  if (page === 'stats') renderStats();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p-'+page).classList.add('on');
+  document.getElementById('nav-'+page).classList.add('on');
   tg.BackButton.hide();
-  updateMainButton(page);
+  if (page==='home') {
+    tg.MainButton.setText(s('create'));
+    tg.MainButton.show();
+    tg.MainButton.onClick(()=>sendToBot('create'));
+  } else {
+    tg.MainButton.hide();
+  }
 }
 
-// ── Send commands to bot ───────────────────────────────────────────────────
+// ── Bot communication ──────────────────────────────────────────────────────
 function sendToBot(cmd) {
-  // sendData работает только при открытии через KeyboardButton (ReplyKeyboard)
-  // При открытии через Menu Button — тоже работает
-  // При любых проблемах — открываем бота напрямую
-  try {
-    tg.sendData(JSON.stringify({ action: cmd, lang }));
-  } catch(e) {
-    // Fallback: открываем бота с командой через deep link
-    const botUsername = tg.initDataUnsafe?.bot?.username || 'QuizProBot';
-    tg.openTelegramLink(`https://t.me/${botUsername}?start=${cmd}`);
-  }
+  try { tg.sendData(JSON.stringify({action:cmd,lang:state.lang})); }
+  catch { tg.openTelegramLink(`https://t.me/${tg.initDataUnsafe?.bot?.username||''}?start=${cmd}`); }
 }
 
-// ── Language grid ──────────────────────────────────────────────────────────
-function renderLangGrid() {
-  const langs = [
-    { code:'ru', label:'🇷🇺 Русский' },
-    { code:'uz', label:"🇺🇿 O'zbek" },
-    { code:'en', label:'🇬🇧 English' },
-    { code:'ar', label:'🇸🇦 العربية' },
-    { code:'tr', label:'🇹🇷 Türkçe' },
-  ];
-  document.getElementById('lang-grid').innerHTML = langs.map(l =>
-    `<button class="lang-btn${l.code===lang?' on':''}" onclick="setLang('${l.code}')">${l.label}</button>`
-  ).join('');
-}
-
-function setLang(l) {
-  lang = l; localStorage.setItem('lang', l);
-  tg.sendData(JSON.stringify({ action: 'set_lang', lang: l }));
-  applyLang();
-}
-
-// ── Price table ────────────────────────────────────────────────────────────
-function renderPriceTable() {
-  const rows = [[10,99,159],[20,168,269],[50,344,551],[100,602,963],
-                [200,1068,1708],[300,1503,2405],[500,2329,3726]];
-  document.getElementById('price-table').innerHTML =
-    `<div class="price-row" style="font-size:12px;color:var(--hint);font-weight:600">
-       <span>${s('questions')}</span><span>Solo ⭐</span><span>Share ⭐</span>
-     </div>` +
-    rows.map(([q,solo,share]) =>
-      `<div class="price-row">
-         <span>${q} ${s('questions')}</span>
-         <span class="price-val">${solo} ⭐</span>
-         <span class="price-val">${share} ⭐</span>
-       </div>`
-    ).join('');
-}
-
-// ── Tests list ─────────────────────────────────────────────────────────────
-function renderTests() {
-  const tests = appData.tests;
-  const listEl = document.getElementById('tests-list');
-  const recentEl = document.getElementById('recent-tests');
-  if (!tests.length) {
-    listEl.innerHTML = `<p class="empty">${s('no-tests')}</p>`;
-    recentEl.innerHTML = `<p class="empty">${s('no-recent')}</p>`;
-    return;
-  }
-  const makeCard = t =>
-    `<div class="card" onclick="openTest(${t.id})" style="cursor:pointer">
-       <div class="card-row">
-         <div>
-           <h3>${t.title}</h3>
-           <p>${t.q_count} ${s('questions')} · <span class="tag ${t.mode==='solo'?'tag-solo':'tag-share'}">${s(t.mode)}</span></p>
-         </div>
-         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--hint)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-       </div>
-     </div>`;
-  listEl.innerHTML = tests.map(makeCard).join('');
-  recentEl.innerHTML = tests.slice(0,3).map(makeCard).join('');
-}
-
-function openTest(id) {
-  const test = appData.tests.find(t => t.id === id);
-  if (!test || !test.questions) return sendToBot('open_test_' + id);
-  startQuiz(test);
-}
-
-// ── Quiz engine ────────────────────────────────────────────────────────────
-function startQuiz(test) {
-  quizState = {
-    test, questions: test.questions, current: 0,
-    score: 0, answers: [], answered: false
+// ── i18n apply ─────────────────────────────────────────────────────────────
+function applyLang() {
+  const L = I[state.lang]||I.en;
+  const map = {
+    'nl-home':'home','nl-tests':'tests','nl-stats':'stats','nl-pricing':'pricing','nl-settings':'settings',
+    'h-welcome':'welcome','h-tagline':'tagline','h-create-lbl':'create','h-tests-lbl':'mytests',
+    'h-recent-title':'recent','h-no-recent':'noneyet','t-create-lbl':'tcreate','t-title':'mytests',
+    's-title':'stitle','s-tests-lbl':'tests_lbl','s-atts-lbl':'atts_lbl','s-pass-lbl':'pass_lbl',
+    's-avg-lbl':'avg_lbl','s-hist-title':'hist',
+    'pr-title':'prtitle','pr-desc':'prdesc','pr-solo':'prsolo','pr-share':'prshare','pr-note':'prnote',
+    'set-title':'settings','set-lang-title':'lang_lbl','set-about':'about',
+    'q-open-btn':'check',
   };
-  nav('quiz');
-  tg.BackButton.show();
-  tg.BackButton.onClick(() => nav('tests'));
-  showQuestion();
-}
-
-function showQuestion() {
-  const { questions, current } = quizState;
-  const q = questions[current];
-  const total = questions.length;
-  const pct = Math.round(current / total * 100);
-
-  document.getElementById('quiz-header').textContent =
-    `${current + 1} ${s('q-of')} ${total}`;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('quiz-q').textContent = q.text;
-  document.getElementById('quiz-explain').style.display = 'none';
-  document.getElementById('quiz-result').style.display = 'none';
-  document.getElementById('quiz-next-btn').style.display = 'none';
-  quizState.answered = false;
-
-  const opts = q.options || [];
-  const letters = 'АБВГД';
-  document.getElementById('quiz-opts').innerHTML = opts.map((o, i) =>
-    `<button class="opt" id="opt-${i}" onclick="answer(${i})">
-       <span class="letter">${letters[i]||i+1}</span>
-       <span>${o}</span>
-     </button>`
-  ).join('');
-}
-
-function answer(idx) {
-  if (quizState.answered) return;
-  quizState.answered = true;
-  const q = quizState.questions[quizState.current];
-  const opts = q.options || [];
-  const chosen = opts[idx];
-  const isOk = chosen === q.correct;
-  if (isOk) quizState.score++;
-  quizState.answers.push({ q: q.text, chosen, correct: q.correct, ok: isOk });
-
-  opts.forEach((_, i) => {
-    const btn = document.getElementById('opt-' + i);
-    btn.disabled = true;
-    if (opts[i] === q.correct) btn.classList.add('correct');
-  });
-  if (!isOk) document.getElementById('opt-' + idx).classList.add('wrong');
-
-  const expl = document.getElementById('quiz-explain');
-  expl.style.display = 'block';
-  expl.textContent = isOk
-    ? (q.explanation || s('correct'))
-    : `${s('wrong')} ${q.correct}${q.explanation ? ' · ' + q.explanation : ''}`;
-
-  const nextBtn = document.getElementById('quiz-next-btn');
-  nextBtn.style.display = 'block';
-  quizState.current++;
-  if (quizState.current < quizState.questions.length) {
-    nextBtn.textContent = s('next');
-  } else {
-    nextBtn.textContent = s('finish');
+  for (const [id,key] of Object.entries(map)) {
+    const el=document.getElementById(id); if(el) el.textContent=L[key]||s(key);
   }
+  const inp=document.getElementById('q-open-input');
+  if(inp) inp.placeholder=s('enter_ans');
+  document.documentElement.lang=state.lang;
+  document.documentElement.dir=state.lang==='ar'?'rtl':'ltr';
+  renderLangGrid();
+  renderPricing();
 }
 
-function quizNext() {
-  if (quizState.current < quizState.questions.length) {
-    showQuestion();
-  } else {
-    showResult();
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderTests();
+  renderStats();
+  renderPricing();
+  renderHome();
+}
+
+function renderHome() {
+  const recent = state.data.tests.slice(0,3);
+  const el = document.getElementById('h-recent-list');
+  if (!recent.length) { el.innerHTML=`<p class="hint">${s('noneyet')}</p>`; return; }
+  el.innerHTML = recent.map(t=>testCard(t)).join('');
+}
+
+function testCard(t) {
+  const icon = t.mode==='solo'?'🔒':'🔗';
+  const cls  = t.mode==='solo'?'solo':'share';
+  return `<div class="test-card" onclick="openTest(${t.id})">
+    <div class="test-icon ${cls}">${icon}</div>
+    <div class="test-meta">
+      <div class="test-title">${esc(t.title)}</div>
+      <div class="test-info">${t.q_count} ${s('q_lbl')} · ${t.total_taken} ${s('attempts')}</div>
+    </div>
+    <svg class="test-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>`;
+}
+
+function renderTests() {
+  const el = document.getElementById('t-list');
+  if (!state.data.tests.length) {
+    el.innerHTML=`<div class="empty"><p>${s('no_tests').replace('\n','<br>')}</p></div>`; return;
   }
+  el.innerHTML = state.data.tests.map(t=>testCard(t)).join('');
 }
 
-function showResult() {
-  const { score, questions, answers } = quizState;
-  const total = questions.length;
-  const pct = Math.round(score / total * 100);
-  const passed = pct >= 60;
-  document.getElementById('quiz-opts').innerHTML = '';
-  document.getElementById('quiz-explain').style.display = 'none';
-  document.getElementById('quiz-next-btn').style.display = 'none';
-  document.getElementById('quiz-q').textContent = '';
-  document.getElementById('quiz-header').textContent = '';
-  document.getElementById('progress-fill').style.width = '100%';
-
-  const wrong = answers.filter(a => !a.ok);
-  document.getElementById('quiz-result').style.display = 'block';
-  document.getElementById('quiz-result').innerHTML = `
-    <div class="result-wrap">
-      <div class="score-ring">
-        <div class="score-big">${score}/${total}</div>
-        <div class="score-pct">${pct}%</div>
-      </div>
-      <h3 style="margin-bottom:6px">${passed ? s('passed') : s('failed')}</h3>
-      ${wrong.length ? `<p style="font-size:13px;color:var(--hint);margin-bottom:12px">${s('mistakes')} ${wrong.slice(0,3).map(a=>a.q.slice(0,40)+'…').join(', ')}</p>` : ''}
-      <button class="btn" onclick="startQuiz(quizState.test)">${s('retry')}</button>
-      <button class="btn btn-sec" style="margin-top:8px" onclick="nav('tests')">${s('back-home')}</button>
-    </div>`;
-
-  tg.sendData(JSON.stringify({
-    action: 'quiz_result',
-    test_id: quizState.test.id,
-    score, total, pct, passed
-  }));
-}
-
-// ── Stats ──────────────────────────────────────────────────────────────────
 function renderStats() {
-  const { tests, attempts } = appData;
-  const passed = attempts.filter(a => a.passed).length;
-  const avg = attempts.length
-    ? Math.round(attempts.reduce((s,a) => s + (a.score/a.total*100||0), 0) / attempts.length)
-    : 0;
-  document.getElementById('s-tests').textContent     = tests.length;
-  document.getElementById('s-attempts').textContent  = attempts.length;
-  document.getElementById('s-passed').textContent    = passed;
-  document.getElementById('s-avg').textContent       = avg + '%';
-
-  const el = document.getElementById('attempts-list');
-  if (!attempts.length) { el.innerHTML = `<p class="empty">${s('no-recent')}</p>`; return; }
-  el.innerHTML = attempts.slice(0,10).map(a => {
-    const pct = Math.round(a.score/a.total*100);
-    return `<div class="price-row">
-      <span style="font-size:13px">${a.title||'—'}</span>
-      <span style="font-size:13px;font-weight:600;color:${pct>=60?'#22a844':'#ff3b30'}">${a.score}/${a.total} (${pct}%)</span>
+  const st = state.data.stats;
+  document.getElementById('s-tests').textContent = st.tests  ?? '—';
+  document.getElementById('s-atts').textContent  = st.atts   ?? '—';
+  document.getElementById('s-pass').textContent  = st.passed ?? '—';
+  document.getElementById('s-avg').textContent   = st.avg!=null ? st.avg+'%' : '—';
+  const el = document.getElementById('s-hist');
+  const atts = state.data.attempts;
+  if (!atts.length) { el.innerHTML=`<p class="hint">${s('noneyet')}</p>`; return; }
+  el.innerHTML = atts.slice(0,10).map(a=>{
+    const pct=Math.round(a.score/a.total*100);
+    return `<div class="attempt-row">
+      <div class="attempt-dot ${a.passed?'pass':'fail'}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.title||'—')}</div>
+        <div class="hint" style="font-size:12px">${a.score}/${a.total} (${pct}%) · ${(a.started_at||'').slice(0,10)}</div>
+      </div>
+      <span class="badge ${a.passed?'badge-pass':'badge-fail'}">${pct}%</span>
     </div>`;
   }).join('');
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
-tg.onEvent('themeChanged', applyLang);
+function renderPricing() {
+  const rows = state.data.prices.length ? state.data.prices.map(p=>[p.q,p.solo,p.share]) :
+    [[10,15,25],[20,30,45],[50,55,85],[100,95,145],[200,165,260],[300,230,365],[500,350,560],[1000,545,875]];
+  const L = I[state.lang]||I.en;
+  let html = `<thead><tr>
+    <th>${L.prqs}</th><th>Solo ⭐</th><th>Share ⭐</th>
+  </tr></thead><tbody>`;
+  const seps = [50,200];
+  rows.forEach(([q,solo,share])=>{
+    html += `<tr><td>${q}</td><td class="price-val">${solo}</td><td class="price-val" style="color:var(--green)">${share}</td></tr>`;
+    if (seps.includes(q)) html += `<tr class="price-sep"><td colspan="3"></td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('pr-table').innerHTML = html;
+}
 
-// Настраиваем MainButton (нижняя кнопка Telegram)
-function updateMainButton(page) {
-  if (page === 'home') {
-    tg.MainButton.setText('Создать тест');
-    tg.MainButton.show();
-    tg.MainButton.onClick(() => sendToBot('create'));
-  } else if (page === 'quiz') {
-    tg.MainButton.hide();
+function renderLangGrid() {
+  const el = document.getElementById('set-lang-grid');
+  el.innerHTML = Object.entries(LANGS).map(([code,label])=>
+    `<button class="lang-btn${code===state.lang?' on':''}" onclick="setLang('${code}')">${label}</button>`
+  ).join('');
+}
+
+// ── Quiz ───────────────────────────────────────────────────────────────────
+async function openTest(id) {
+  if (!API) { sendToBot('open_test_'+id); return; }
+  showToast(s('loading'));
+  const data = await apiGet(`/api/test?id=${id}&uid=${UID}`);
+  if (data && data.questions && data.questions.length) startQuiz(data);
+  else sendToBot('open_test_'+id);
+}
+
+function startQuiz(data) {
+  const test = data.test;
+  const qs   = data.questions;
+  state.quiz = { test, qs, cur:0, score:0, answers:[], answered:false };
+  nav('quiz');
+  tg.BackButton.show();
+  tg.BackButton.onClick(()=>{ tg.BackButton.hide(); nav('tests'); });
+  showQuestion();
+}
+
+function showQuestion() {
+  const q     = state.quiz;
+  const cur   = q.qs[q.cur];
+  const n     = q.cur+1;
+  const total = q.qs.length;
+  const pct   = Math.round(q.cur/total*100);
+
+  document.getElementById('q-num').textContent   = `${n} / ${total}`;
+  document.getElementById('q-score').textContent = `${q.score} ✓`;
+  document.getElementById('q-bar').style.width   = pct+'%';
+  document.getElementById('q-text').textContent  = cur.text;
+  document.getElementById('q-explain').style.display = 'none';
+  document.getElementById('q-next').style.display    = 'none';
+  document.getElementById('q-result').style.display  = 'none';
+  document.getElementById('q-opts').innerHTML        = '';
+  document.getElementById('q-open-wrap').style.display = 'none';
+  const openInput = document.getElementById('q-open-input');
+  if (openInput) { openInput.value=''; openInput.className='input'; }
+  q.answered = false;
+
+  const type = cur.type || 'mcq';
+  if (type==='open') {
+    document.getElementById('q-open-wrap').style.display = 'block';
+    setTimeout(()=>openInput&&openInput.focus(), 100);
+  } else if (type==='tf') {
+    document.getElementById('q-opts').innerHTML = [
+      `<button class="opt" id="opt-true"  onclick="answer('true')">  <span class="opt-letter">✓</span> ${s('correct').replace('✅  ','')}</button>`,
+      `<button class="opt" id="opt-false" onclick="answer('false')"> <span class="opt-letter">✗</span> Неверно</button>`,
+    ].join('');
   } else {
-    tg.MainButton.hide();
+    const letters = 'ABCDE';
+    document.getElementById('q-opts').innerHTML = (cur.options||[]).map((o,i)=>
+      `<button class="opt" id="opt-${i}" onclick="answer(${i})">
+        <span class="opt-letter">${letters[i]}</span>
+        <span>${esc(o)}</span>
+       </button>`
+    ).join('');
   }
 }
 
-// Получаем данные из бота
-window.addEventListener('message', e => {
+function answer(val) {
+  if (state.quiz.answered) return;
+  state.quiz.answered = true;
+  const q   = state.quiz;
+  const cur = q.qs[q.cur];
+  const type = cur.type||'mcq';
+  let chosen, isOk;
+
+  if (type==='mcq') {
+    const opts = cur.options||[];
+    chosen = typeof val==='number' ? opts[val] : val;
+    isOk   = chosen===cur.correct;
+    // Подсветка
+    opts.forEach((_,i)=>{
+      const btn=document.getElementById('opt-'+i);
+      if(!btn) return;
+      btn.disabled=true;
+      if(opts[i]===cur.correct) btn.classList.add('correct');
+    });
+    if (!isOk) document.getElementById('opt-'+val)?.classList.add('wrong');
+  } else if (type==='tf') {
+    chosen = val;
+    isOk   = val===cur.correct;
+    ['true','false'].forEach(v=>{
+      const btn=document.getElementById('opt-'+v);
+      if(btn) { btn.disabled=true; if(v===cur.correct) btn.classList.add('correct'); }
+    });
+    if (!isOk) document.getElementById('opt-'+val)?.classList.add('wrong');
+  }
+
+  finishAnswer(chosen, isOk, cur);
+}
+
+function checkOpen() {
+  if (state.quiz.answered) return;
+  const inp = document.getElementById('q-open-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  state.quiz.answered = true;
+  const cur = state.quiz.qs[state.quiz.cur];
+  const u   = val.toLowerCase();
+  const c   = (cur.correct||'').toLowerCase();
+  const isOk = u===c || u.includes(c) || c.includes(u);
+  inp.className = 'input ' + (isOk?'correct-input':'wrong-input');
+  inp.disabled  = true;
+  document.getElementById('q-open-btn').disabled = true;
+  finishAnswer(val, isOk, cur);
+}
+
+function finishAnswer(chosen, isOk, cur) {
+  const q = state.quiz;
+  if (isOk) q.score++;
+  q.answers.push({q:cur.text, chosen, correct:cur.correct, ok:isOk});
+  q.cur++;
+
+  const expl  = document.getElementById('q-explain');
+  const fbMsg = isOk ? s('correct') : `${s('wrong')} <b>${s('correct_ans')}</b> ${esc(cur.correct)}`;
+  expl.innerHTML = (cur.explanation ? fbMsg + `<br><br>💡 ${esc(cur.explanation)}` : fbMsg);
+  expl.style.display = 'block';
+
+  const nextBtn = document.getElementById('q-next');
+  nextBtn.style.display = 'flex';
+  nextBtn.textContent   = q.cur < q.qs.length ? s('next') : s('finish');
+}
+
+function quizNext() {
+  const q = state.quiz;
+  if (q.cur < q.qs.length) showQuestion();
+  else showResult();
+}
+
+function showResult() {
+  const q     = state.quiz;
+  const score = q.score;
+  const total = q.qs.length;
+  const pct   = Math.round(score/total*100);
+  const passed= pct >= (q.test.pass_score||60);
+
+  document.getElementById('q-opts').innerHTML = '';
+  document.getElementById('q-explain').style.display = 'none';
+  document.getElementById('q-next').style.display    = 'none';
+  document.getElementById('q-text').textContent      = '';
+  document.getElementById('q-num').textContent       = '';
+  document.getElementById('q-score').textContent     = '';
+  document.getElementById('q-bar').style.width       = '100%';
+  document.getElementById('q-open-wrap').style.display = 'none';
+
+  const wrong = q.answers.filter(a=>!a.ok);
+  const wList = wrong.slice(0,3).map(a=>`<div style="font-size:12px;color:var(--hint);margin-bottom:4px">• ${esc(a.q.slice(0,55))}…</div>`).join('');
+  const extra = wrong.length>3 ? `<div class="hint" style="font-size:12px">...+${wrong.length-3}</div>` : '';
+
+  document.getElementById('q-result').style.display = 'block';
+  document.getElementById('q-result').innerHTML = `
+    <div style="text-align:center;padding:20px 0">
+      <div class="result-circle">
+        <div class="result-big">${pct}%</div>
+        <div class="result-pct">${score}/${total}</div>
+      </div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px">${passed?s('passed'):s('failed')}</div>
+      <div class="hint" style="margin-bottom:${wrong.length?'16px':'24px'}">${s('score',{s:score,t:total,p:pct})}</div>
+      ${wrong.length?`<div style="text-align:left;margin-bottom:16px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">${s('mistakes')}</div>${wList}${extra}</div>`:''}
+      <button class="btn" onclick="reloadQuiz()" style="margin-bottom:8px">${s('retry')}</button>
+      <button class="btn btn-ghost" onclick="nav('tests')">${s('home_btn')}</button>
+    </div>`;
+
+  // Save result
+  if (API && UID) {
+    apiPost('/api/result',{test_id:q.test.id,uid:UID,score,total,passed:passed?1:0});
+  } else {
+    try { tg.sendData(JSON.stringify({action:'quiz_result',test_id:q.test.id,score,total,pct,passed})); }
+    catch {}
+  }
+  tg.BackButton.hide();
+}
+
+function reloadQuiz() {
+  const testId = state.quiz?.test?.id;
+  if (testId) openTest(testId);
+  else nav('tests');
+}
+
+// ── Lang ───────────────────────────────────────────────────────────────────
+function setLang(lang) {
+  state.lang = lang;
+  localStorage.setItem('lang', lang);
+  try { tg.sendData(JSON.stringify({action:'set_lang',lang})); } catch {}
+  applyLang();
+  renderAll();
+  showToast('✓');
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg, dur=2000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), dur);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+tg.onEvent('themeChanged', applyLang);
+tg.onEvent('viewportChanged', ()=>{});
+window.addEventListener('message', e=>{
   try {
-    const d = JSON.parse(e.data);
-    if (d.tests)    { appData.tests    = d.tests;    renderTests(); }
-    if (d.attempts) { appData.attempts = d.attempts; renderStats(); }
-    if (d.quiz)     { startQuiz(d.quiz); }
-    if (d.lang)     { lang = d.lang; localStorage.setItem('lang',lang); applyLang(); }
+    const d=JSON.parse(e.data);
+    if(d.tests)    { state.data.tests=d.tests; renderTests(); renderHome(); }
+    if(d.attempts) { state.data.attempts=d.attempts; renderStats(); }
+    if(d.lang)     { state.lang=d.lang; localStorage.setItem('lang',d.lang); applyLang(); }
+    if(d.quiz)     { startQuiz(d.quiz); }
   } catch {}
 });
 
+// Normalize lang
+if (!I[state.lang]) state.lang = 'en';
+
 applyLang();
+loadData();
+
+// MainButton
+tg.MainButton.setText(s('create'));
+tg.MainButton.show();
+tg.MainButton.onClick(()=>sendToBot('create'));
 </script>
 </body>
 </html>
